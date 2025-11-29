@@ -1,0 +1,269 @@
+:root {
+  --primary-color: #6200ea;
+  --secondary-color: #03dac6;
+  --bg-color: #121212;
+  --surface-color: #1e1e1e;
+  --text-color: #ffffff;
+  --accent-color: #bb86fc;
+  --error-color: #cf6679;
+  --success-color: #03dac6;
+  --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  transition: background 0.3s, color 0.3s;
+  overflow-x: hidden;
+}
+
+/* Background Animation */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, #2c2c2c 0%, #000000 100%);
+  z-index: -1;
+}
+
+header {
+  background: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+  background: linear-gradient(45deg, var(--accent-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+#lang-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: 5px 10px;
+  font-size: 0.9rem;
+}
+
+button {
+  margin: 8px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--primary-color), #3700b3);
+  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+  filter: brightness(1.1);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.hidden { display: none !important; }
+
+/* Menu */
+#menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+#menu button {
+  width: 100%;
+  max-width: 400px;
+  text-align: left;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Game Containers */
+.game-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: var(--surface-color);
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Array Garden */
+#grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  justify-content: center;
+  margin: 20px auto;
+  max-width: 400px;
+  aspect-ratio: 1;
+}
+
+.cell {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  background: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cell.filled {
+  background: var(--secondary-color);
+  box-shadow: 0 0 8px var(--secondary-color);
+}
+
+.info-box {
+  background: rgba(255,255,255,0.05);
+  padding: 15px;
+  border-radius: 10px;
+  margin: 15px 0;
+  text-align: left;
+}
+
+/* Quiz */
+#quiz-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+#quiz-options button {
+  margin: 0;
+  height: 80px;
+  font-size: 1.5rem;
+}
+
+#quiz-question {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 20px 0;
+  color: var(--accent-color);
+}
+
+/* Monster */
+#monster-card {
+  background: #2c2c2c;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+#monster-number {
+  font-size: 4rem;
+  color: var(--error-color);
+  text-shadow: 0 0 10px var(--error-color);
+  margin: 10px 0;
+}
+
+.monster-tile {
+  width: 20px;
+  height: 20px;
+  background: var(--error-color);
+  border-radius: 2px;
+}
+
+#monster-array {
+  display: inline-grid;
+  gap: 2px;
+  margin-top: 20px;
+  padding: 10px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+}
+
+select {
+  padding: 10px;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  background: #444;
+  color: white;
+  border: 1px solid #666;
+}
+
+/* Time Attack */
+#timer-bar {
+  width: 100%;
+  height: 10px;
+  background: #333;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+#timer-fill {
+  height: 100%;
+  background: var(--error-color);
+  width: 100%;
+  transition: width 1s linear;
+}
+
+/* Falling Stars */
+#stars-canvas {
+  background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+  border-radius: 10px;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+  cursor: crosshair;
+  width: 100%;
+  height: 400px;
+}
+
+#stars-input {
+  font-size: 2rem;
+  padding: 10px;
+  width: 100px;
+  text-align: center;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid var(--accent-color);
+  color: white;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  h1 { font-size: 1.5rem; }
+  #grid { gap: 2px; }
+  #quiz-options { grid-template-columns: 1fr; }
+  #quiz-question { font-size: 2.5rem; }
+}

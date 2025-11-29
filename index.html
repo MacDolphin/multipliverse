@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>乘法小宇宙 MultipliVerse</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1 data-i18n="appTitle">乘法小宇宙 MultipliVerse</h1>
+        <p data-i18n="appSubtitle">用視覺和遊戲學會九九乘法！</p>
+        <button id="lang-toggle" onclick="toggleLanguage()">English</button>
+    </header>
+
+    <!-- Menu -->
+    <div id="menu">
+        <h2 data-i18n="menuTitle">選擇模式</h2>
+        <button onclick="showGame('array')">
+            <span data-i18n="modeArray">🌱 陣列花園 (概念)</span>
+        </button>
+        <button onclick="showGame('quiz')">
+            <span data-i18n="modeQuiz">🎯 九九小挑戰 (背誦)</span>
+        </button>
+        <button onclick="showGame('monster')">
+            <span data-i18n="modeMonster">🐲 怪獸挑戰 (因數)</span>
+        </button>
+        <button onclick="showGame('time')">
+            <span data-i18n="modeTime">⏳ 限時挑戰 (速度)</span>
+        </button>
+        <button onclick="showGame('stars')">
+            <span data-i18n="modeStars">🌠 流星雨 (反應)</span>
+        </button>
+    </div>
+
+    <!-- Array Garden -->
+    <div id="game-array" class="game-container hidden">
+        <h2 data-i18n="arrayTitle">🌱 陣列花園</h2>
+        <p data-i18n="arrayDesc">點選格子，試著做出 <span id="target-rc-text"></span> 的陣列！</p>
+
+        <div id="grid"></div>
+
+        <div class="info-box">
+            <div><span data-i18n="arraySelected">你目前選了</span> <span id="current-count">0</span></div>
+            <div><span data-i18n="arrayEst">估計陣列：</span><span id="current-array">？ × ？</span></div>
+            <div><span data-i18n="arrayTotal">總數：</span><span id="current-total">0</span></div>
+            <div id="array-feedback" style="margin-top:5px; font-weight:bold; color:var(--accent-color);"></div>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <button onclick="checkArray()" data-i18n="arrayCheck">✅ 確認是否完成</button>
+            <button onclick="newArrayTask()" data-i18n="arrayNew">🔁 換一題</button>
+            <button onclick="backToMenu()" data-i18n="backToMenu">⬅ 回主選單</button>
+        </div>
+    </div>
+
+    <!-- Quiz -->
+    <div id="game-quiz" class="game-container hidden">
+        <h2 data-i18n="quizTitle">🎯 九九小挑戰</h2>
+
+        <div id="quiz-menu">
+            <button onclick="startQuiz(2,5)" data-i18n="quizRange25">2～5 的乘法</button>
+            <button onclick="startQuiz(6,9)" data-i18n="quizRange69">6～9 的乘法</button>
+            <button onclick="startQuiz(2,9)" data-i18n="quizRange29">全部 2～9</button>
+            <button onclick="backToMenu()" data-i18n="backToMenu">⬅ 回主選單</button>
+        </div>
+
+        <div id="quiz-play" class="hidden">
+            <div id="quiz-question"></div>
+            <div id="quiz-options"></div>
+            <div id="quiz-progress" style="margin-top:10px;"></div>
+            <div id="quiz-feedback" style="font-size:1.2rem; margin-top:10px; min-height: 1.5em;"></div>
+        </div>
+    </div>
+
+    <!-- Monster -->
+    <div id="game-monster" class="game-container hidden">
+        <h2 data-i18n="monsterTitle">🐲 怪獸挑戰</h2>
+        <p data-i18n="monsterDesc">怪獸身上的數字是由一個「乘法陣列」變出來的，請找出一組因數打敗他！</p>
+
+        <div id="monster-card">
+            <div data-i18n="monsterPower">怪獸的力量值：</div>
+            <div id="monster-number">?</div>
+
+            <div
+                style="margin-top: 10px; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap;">
+                <span data-i18n="monsterPick1">選擇第一個數：</span>
+                <select id="monster-a"></select>
+                <span> × </span>
+                <span data-i18n="monsterPick2">第二個數：</span>
+                <select id="monster-b"></select>
+            </div>
+
+            <button onclick="attackMonster()" data-i18n="monsterAttack" style="margin-top:15px;">⚡ 攻擊！</button>
+
+            <div id="monster-feedback" style="margin-top: 10px; font-weight:bold; min-height:1.5em;"></div>
+            <div id="monster-array"></div>
+        </div>
+
+        <div style="margin-top:10px;">
+            <button onclick="newMonster()" data-i18n="monsterNew">🔁 換一隻怪獸</button>
+            <button onclick="backToMenu()" data-i18n="backToMenu">⬅ 回主選單</button>
+        </div>
+    </div>
+
+    <!-- Time Attack -->
+    <div id="game-time" class="game-container hidden">
+        <h2 data-i18n="timeTitle">⏳ 限時挑戰</h2>
+        <p data-i18n="timeDesc">在 60 秒內回答越多題越好！</p>
+
+        <div id="time-menu">
+            <button onclick="startTimeAttack()" data-i18n="timeStart">🚀 開始挑戰</button>
+            <button onclick="backToMenu()" data-i18n="backToMenu">⬅ 回主選單</button>
+        </div>
+
+        <div id="time-play" class="hidden">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <div><span data-i18n="timeLeft">剩餘時間：</span> <span id="time-left">60</span>s</div>
+                <div><span data-i18n="timeScore">得分：</span> <span id="time-score">0</span></div>
+            </div>
+            <div id="timer-bar">
+                <div id="timer-fill"></div>
+            </div>
+
+            <div id="time-question" style="font-size:3rem; margin:20px 0;"></div>
+            <div id="time-options" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+        </div>
+    </div>
+
+    <!-- Falling Stars -->
+    <div id="game-stars" class="game-container hidden">
+        <h2 data-i18n="starsTitle">🌠 流星雨</h2>
+        <p data-i18n="starsDesc">在流星落地前輸入答案！</p>
+
+        <div id="stars-menu">
+            <button onclick="startStarsGame()" data-i18n="starsStart">🚀 開始遊戲</button>
+            <button onclick="backToMenu()" data-i18n="backToMenu">⬅ 回主選單</button>
+        </div>
+
+        <div id="stars-play" class="hidden" style="position:relative;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <div><span data-i18n="starsScore">得分：</span> <span id="stars-score">0</span></div>
+                <div><span data-i18n="starsLives">生命：</span> <span id="stars-lives">❤❤❤</span></div>
+            </div>
+
+            <canvas id="stars-canvas" width="600" height="400"></canvas>
+
+            <!-- Game Over Overlay -->
+            <div id="stars-gameover" class="hidden"
+                style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; justify-content:center; align-items:center; border-radius:10px;">
+                <h2 data-i18n="gameOver" style="font-size:3rem; color:var(--error-color);">GAME OVER</h2>
+                <h3 id="stars-final-score" style="font-size:2rem; margin:10px 0;"></h3>
+                <button onclick="startStarsGame()"><span data-i18n="playAgain">🔁 Play Again</span></button>
+                <button onclick="backToMenu()"><span data-i18n="backToMenu">⬅ Menu</span></button>
+            </div>
+
+            <div style="display:flex; justify-content:center; gap:10px;">
+                <input type="number" id="stars-input" placeholder="?" onkeydown="checkStarInput(event)">
+                <button onclick="submitStarInput()" style="padding:10px 20px;">Go</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="locales.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
