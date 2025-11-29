@@ -23,7 +23,7 @@ const translations = {
         "arrayFeedbackSuccess": "太棒了！你成功做出目標陣列！",
         "arrayFeedbackShape": "形狀對了，但是格子數不對喔，試著補滿或減少一點。",
         "arrayFeedbackWrong": "目前的陣列不對喔，再試試看調整行跟列！",
-        "targetText": "行 × 列",
+        "targetText": "列 × 行",
 
         // Quiz
         "quizTitle": "🎯 九九小挑戰",
