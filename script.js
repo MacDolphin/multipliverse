@@ -2,6 +2,50 @@
 let currentLang = "zh-Hant";
 let currentGame = null;
 let isSoundOn = true;
+let totalGems = parseInt(localStorage.getItem("mv_gems") || "0");
+
+// --- Gem Manager ---
+const GemManager = {
+    add: function (amount) {
+        totalGems += amount;
+        localStorage.setItem("mv_gems", totalGems);
+        this.updateDisplay();
+        this.animateAdd(amount);
+    },
+    updateDisplay: function () {
+        document.getElementById("gem-count").textContent = totalGems;
+    },
+    animateAdd: function (amount) {
+        const el = document.getElementById("gem-counter");
+        el.classList.add("anim-pop");
+        setTimeout(() => el.classList.remove("anim-pop"), 300);
+        showFloatingFeedback(`+${amount} 💎`, el.getBoundingClientRect().left, el.getBoundingClientRect().top + 50, "#00e5ff");
+    }
+};
+
+// --- Monster Generator ---
+function generateMonster() {
+    const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEEAD", "#D4A5A5"];
+    const bodyColor = colors[Math.floor(Math.random() * colors.length)];
+    const eyeCount = Math.floor(Math.random() * 3) + 1;
+
+    let eyesSvg = "";
+    for (let i = 0; i < eyeCount; i++) {
+        const cx = 35 + (i * 30 / Math.max(1, eyeCount - 1));
+        eyesSvg += `<circle cx="${eyeCount === 1 ? 50 : cx}" cy="40" r="8" fill="white" />
+                    <circle cx="${eyeCount === 1 ? 50 : cx}" cy="40" r="3" fill="black" />`;
+    }
+
+    const svg = `
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20,80 Q10,50 20,20 Q50,0 80,20 Q90,50 80,80 Q50,100 20,80" fill="${bodyColor}" stroke="#333" stroke-width="3" />
+        ${eyesSvg}
+        <path d="M30,70 Q50,80 70,70" fill="none" stroke="#333" stroke-width="3" stroke-linecap="round" />
+        <path d="M35,70 L35,75 M45,70 L45,75 M55,70 L55,75 M65,70 L65,75" stroke="#333" stroke-width="2" />
+    </svg>`;
+
+    document.getElementById("monster-image").innerHTML = svg;
+}
 
 // --- Sound & Voice Manager ---
 const SoundManager = {
@@ -36,6 +80,11 @@ const SoundManager = {
     playWin: function () {
         this.init();
         [400, 500, 600, 800].forEach((f, i) => setTimeout(() => this.playTone(f, 'square', 0.2), i * 100));
+    },
+    playMonsterRoar: function () {
+        this.init();
+        this.playTone(100, 'sawtooth', 0.5);
+        setTimeout(() => this.playTone(80, 'sawtooth', 0.5), 100);
     }
 };
 
@@ -203,334 +252,345 @@ function newArrayTask() {
 
     document.getElementById("target-rc-text").textContent =
         `${text} (${arrayTargetRows * arrayTargetCols})`;
-
-    arraySelected = [];
-    document.querySelectorAll(".cell").forEach(c => c.classList.remove("filled"));
-    updateArrayInfo();
-    document.getElementById("array-feedback").textContent = "";
-}
-
+    
+        arraySelected = [];
+        document.querySelectorAll(".cell").forEach(c => c.classList.remove("filled"));
+        updateArrayInfo();
+        document.getElementById("array-feedback").textContent = "";
+        
+        
 function checkArray() {
-    const t = translations[currentLang];
-    const fb = document.getElementById("array-feedback");
-
-    if (arraySelected.length === 0) {
-        fb.textContent = t.arrayFeedbackEmpty;
-        return;
-    }
-
+        const t = translations[currentLang];
+        const fb = document.getElementById("array-feedback");
+            
+            arraySelected.length === 0) {
+            fb.textContent = t.arrayFeedbackEmpty;
+            return;
+            
+        
     const rows = new Set(arraySelected.map(i => Math.floor(i / 10))).size;
-    const cols = new Set(arraySelected.map(i => i % 10)).size;
-    const total = arraySelected.length;
+        const cols = new Set(arraySelected.map(i => i % 10)).size;
+            t total = arraySelected.length;
 
-    if (rows === arrayTargetRows && cols === arrayTargetCols && total === rows * cols) {
-        fb.textContent = t.arrayFeedbackSuccess;
-        fb.style.color = "var(--success-color)";
-        SoundManager.playCorrect();
-        VoiceManager.speak(t.arrayFeedbackSuccess);
+        if (rows === arrayTargetRows && cols === arrayTargetCols && total === rows * cols) {
+            fb.textContent = t.arrayFeedbackSuccess;
+            fb.style.color = "var(--success-color)";
+            SoundManager.playCorrect();
+            VoiceManager.speak(t.arrayFeedbackSuccess);
         triggerConfetti();
+        GemManager.add(10);
     } else if (rows === arrayTargetRows && cols === arrayTargetCols) {
-        fb.textContent = t.arrayFeedbackShape;
-        fb.style.color = "var(--error-color)";
+            fb.textContent = t.arrayFeedbackShape;
+            fb.style.color = "var(--error-color)";
         SoundManager.playWrong();
-        VoiceManager.speak(t.arrayFeedbackShape);
-    } else {
-        fb.textContent = t.arrayFeedbackWrong;
-        fb.style.color = "var(--error-color)";
+            VoiceManager.speak(t.arrayFeedbackShape);
+            se {
+            fb.textContent = t.arrayFeedbackWrong;
+            fb.style.color = "var(--error-color)";
         SoundManager.playWrong();
-        VoiceManager.speak(t.arrayFeedbackWrong);
-    }
-}
+            VoiceManager.speak(t.arrayFeedbackWrong);
+        }
+        
 
-// --- Quiz ---
-let quizData = { min: 2, max: 9, current: 0, total: 10, score: 0 };
-
-function resetQuizUI() {
-    document.getElementById("quiz-menu").classList.remove("hidden");
-    document.getElementById("quiz-play").classList.add("hidden");
-}
-
-function startQuiz(min, max) {
-    quizData = { min, max, current: 0, total: 10, score: 0 };
-    document.getElementById("quiz-menu").classList.add("hidden");
-    document.getElementById("quiz-play").classList.remove("hidden");
-    nextQuizQuestion();
-}
-
-function nextQuizQuestion() {
-    const t = translations[currentLang];
-    if (quizData.current >= quizData.total) {
+        -- Quiz ---
+            Data = { min: 2, max: 9, current: 0, total: 10, score: 0 };
+            
+             resetQuizUI() {
+            ment.getElementById("quiz-menu").classList.remove("hidden");
+            ment.getElementById("quiz-play").classList.add("hidden");
+        
+            
+             startQuiz(min, max) {
+            Data = { min, max, current: 0, total: 10, score: 0 };
+            ment.getElementById("quiz-menu").classList.add("hidden");
+        document.getElementById("quiz-play").classList.remove("hidden");
+            QuizQuestion();
+            
+            
+             nextQuizQuestion() {
+        const t = translations[currentLang];
+        if (quizData.current >= quizData.total) {
         document.getElementById("quiz-question").textContent = t.quizScore + " " + quizData.score + " / " + quizData.total;
-        document.getElementById("quiz-options").innerHTML = "";
-        document.getElementById("quiz-feedback").textContent = quizData.score >= 8 ? t.quizExcellent : t.quizGood;
+            document.getElementById("quiz-options").innerHTML = "";
+            document.getElementById("quiz-feedback").textContent = quizData.score >= 8 ? t.quizExcellent : t.quizGood;
 
-        const backBtn = document.createElement("button");
-        backBtn.textContent = t.backToMenu;
-        backBtn.onclick = backToMenu;
-        backBtn.style.marginTop = "20px";
+            const backBtn = document.createElement("button");
+            backBtn.textContent = t.backToMenu;
+            backBtn.onclick = backToMenu;
+            backBtn.style.marginTop = "20px";
         document.getElementById("quiz-options").appendChild(backBtn);
-        return;
-    }
-
-    quizData.current++;
-    const a = quizData.min + Math.floor(Math.random() * (quizData.max - quizData.min + 1));
-    const b = quizData.min + Math.floor(Math.random() * (quizData.max - quizData.min + 1));
+            return;
+        }
+        
+        quizData.current++;
+        const a = quizData.min + Math.floor(Math.random() * (quizData.max - quizData.min + 1));
+        const b = quizData.min + Math.floor(Math.random() * (quizData.max - quizData.min + 1));
     const ans = a * b;
-
-    document.getElementById("quiz-question").textContent = `${a} × ${b} = ?`;
-    VoiceManager.speak(`${a} times ${b}`.replace("times", currentLang === 'zh-Hant' ? '乘' : 'times'));
-    document.getElementById("quiz-progress").textContent = t.quizProgress.replace("{current}", quizData.current).replace("{total}", quizData.total);
-    document.getElementById("quiz-feedback").textContent = "";
-
+    
+        document.getElementById("quiz-question").textContent = `${a} × ${b} = ?`;
+        VoiceManager.speak(`${a} times ${b}`.replace("times", currentLang === 'zh-Hant' ? '乘' : 'times'));
+            ment.getElementById("quiz-progress").textContent = t.quizProgress.replace("{current}", quizData.current).replace("{total}", quizData.total);
+            ment.getElementById("quiz-feedback").textContent = "";
+            
     let opts = [ans];
-    while (opts.length < 4) {
-        let fake = ans + (Math.floor(Math.random() * 11) - 5);
-        if (fake > 0 && !opts.includes(fake)) opts.push(fake);
-    }
-    opts.sort(() => Math.random() - 0.5);
-
-    const container = document.getElementById("quiz-options");
+            e (opts.length < 4) {
+            let fake = ans + (Math.floor(Math.random() * 11) - 5);
+            if (fake > 0 && !opts.includes(fake)) opts.push(fake);
+            
+            .sort(() => Math.random() - 0.5);
+            
+        const container = document.getElementById("quiz-options");
     container.innerHTML = "";
-    opts.forEach(val => {
-        const btn = document.createElement("button");
-        btn.textContent = val;
-        btn.onclick = () => checkQuizAnswer(val, ans);
+        opts.forEach(val => {
+            const btn = document.createElement("button");
+            btn.textContent = val;
+            btn.onclick = () => checkQuizAnswer(val, ans);
         container.appendChild(btn);
-    });
-}
-
-function checkQuizAnswer(val, ans) {
+        });
+        
+        
+        tion checkQuizAnswer(val, ans) {
     const t = translations[currentLang];
-    const fb = document.getElementById("quiz-feedback");
-    if (val === ans) {
-        quizData.score++;
-        fb.textContent = t.quizCorrect;
-        fb.style.color = "var(--success-color)";
-        SoundManager.playCorrect();
+        const fb = document.getElementById("quiz-feedback");
+        if (val === ans) {
+            quizData.score++;
+            fb.textContent = t.quizCorrect;
+            fb.style.color = "var(--success-color)";
+            SoundManager.playCorrect();
         document.getElementById("quiz-question").classList.add("anim-pop");
-        setTimeout(() => document.getElementById("quiz-question").classList.remove("anim-pop"), 300);
+            setTimeout(() => document.getElementById("quiz-question").classList.remove("anim-pop"), 300);
+            GemManager.add(5);
     } else {
         fb.textContent = t.quizWrong + ans;
-        fb.style.color = "var(--error-color)";
-        SoundManager.playWrong();
-        document.getElementById("quiz-question").classList.add("anim-shake");
-        setTimeout(() => document.getElementById("quiz-question").classList.remove("anim-shake"), 400);
-    }
-    setTimeout(nextQuizQuestion, 1000);
-}
-
-// --- Monster ---
-let monsterVal = 0;
-
-function initMonsterGame() {
-    const selA = document.getElementById("monster-a");
-    const selB = document.getElementById("monster-b");
-    if (selA.options.length === 0) {
-        for (let i = 1; i <= 9; i++) {
-            selA.add(new Option(i, i));
-            selB.add(new Option(i, i));
+            fb.style.color = "var(--error-color)";
+            SoundManager.playWrong();
+            document.getElementById("quiz-question").classList.add("anim-shake");
+            setTimeout(() => document.getElementById("quiz-question").classList.remove("anim-shake"), 400);
         }
-    }
-    newMonster();
+        setTimeout(nextQuizQuestion, 1000);
 }
-
-function newMonster() {
-    const a = 2 + Math.floor(Math.random() * 8);
-    const b = 2 + Math.floor(Math.random() * 8);
-    monsterVal = a * b;
-    document.getElementById("monster-number").textContent = monsterVal;
-    document.getElementById("monster-feedback").textContent = translations[currentLang].monsterIntro;
-    document.getElementById("monster-feedback").style.color = "var(--text-color)";
-    document.getElementById("monster-array").innerHTML = "";
-}
-
-function attackMonster() {
-    const a = parseInt(document.getElementById("monster-a").value);
-    const b = parseInt(document.getElementById("monster-b").value);
-    const t = translations[currentLang];
-    const fb = document.getElementById("monster-feedback");
-
-    if (a * b === monsterVal) {
-        fb.textContent = t.monsterSuccess;
-        fb.style.color = "var(--success-color)";
-        drawMonsterArray(a, b);
-        SoundManager.playWin();
-        triggerConfetti();
-        VoiceManager.speak(t.monsterSuccess);
-    } else {
-        fb.textContent = t.monsterFail;
-        fb.style.color = "var(--error-color)";
-        SoundManager.playWrong();
-        VoiceManager.speak(t.monsterFail);
-    }
-}
-
-function drawMonsterArray(a, b) {
-    const div = document.getElementById("monster-array");
-    div.innerHTML = "";
-    div.style.gridTemplateColumns = `repeat(${b}, 20px)`;
-    for (let i = 0; i < a * b; i++) {
-        const tile = document.createElement("div");
-        tile.className = "monster-tile";
-        div.appendChild(tile);
-    }
-}
-
-// --- Time Attack ---
-let timeAttackInterval;
-let timeData = { timeLeft: 60, score: 0 };
-
-function resetTimeUI() {
-    document.getElementById("time-menu").classList.remove("hidden");
-    document.getElementById("time-play").classList.add("hidden");
-}
-
-function startTimeAttack() {
-    timeData = { timeLeft: 60, score: 0 };
-    document.getElementById("time-menu").classList.add("hidden");
-    document.getElementById("time-play").classList.remove("hidden");
-    updateTimeDisplay();
-    nextTimeQuestion();
-
-    timeAttackInterval = setInterval(() => {
-        timeData.timeLeft--;
-        updateTimeDisplay();
-        if (timeData.timeLeft <= 0) {
-            clearInterval(timeAttackInterval);
-            endTimeAttack();
-        }
-    }, 1000);
-}
-
-function updateTimeDisplay() {
-    document.getElementById("time-left").textContent = timeData.timeLeft;
-    document.getElementById("time-score").textContent = timeData.score;
-    document.getElementById("timer-fill").style.width = (timeData.timeLeft / 60 * 100) + "%";
-}
-
-function nextTimeQuestion() {
-    const a = 2 + Math.floor(Math.random() * 8);
-    const b = 2 + Math.floor(Math.random() * 8);
-    const ans = a * b;
-
-    document.getElementById("time-question").textContent = `${a} × ${b} = ?`;
-
-    let opts = [ans];
-    while (opts.length < 4) {
-        let fake = ans + (Math.floor(Math.random() * 11) - 5);
-        if (fake > 0 && !opts.includes(fake)) opts.push(fake);
-    }
-    opts.sort(() => Math.random() - 0.5);
-
-    const container = document.getElementById("time-options");
-    container.innerHTML = "";
-    opts.forEach(val => {
-        const btn = document.createElement("button");
-        btn.textContent = val;
-        btn.onclick = () => {
-            if (val === ans) {
-                timeData.score += 10;
-                SoundManager.playCorrect();
-                nextTimeQuestion();
-            } else {
-                timeData.score = Math.max(0, timeData.score - 5);
-                SoundManager.playWrong();
-                updateTimeDisplay();
+    
+        -- Monster ---
+        monsterVal = 0;
+        
+             initMonsterGame() {
+            t selA = document.getElementById("monster-a");
+            t selB = document.getElementById("monster-b");
+            selA.options.length === 0) {
+            for (let i = 1; i <= 9; i++) {
+                selA.add(new Option(i, i));
+                selB.add(new Option(i, i));
             }
-        };
-        container.appendChild(btn);
-    });
-}
-
-function endTimeAttack() {
-    const t = translations[currentLang];
-    document.getElementById("time-question").textContent = t.timeOver;
-    document.getElementById("time-options").innerHTML = `<h3>${t.timeFinalScore} ${timeData.score}</h3>`;
-
-    const backBtn = document.createElement("button");
-    backBtn.textContent = t.backToMenu;
-    backBtn.onclick = backToMenu;
-    backBtn.style.marginTop = "20px";
-    document.getElementById("time-options").appendChild(backBtn);
-}
-
-// --- Falling Stars ---
-let starsAnimFrame;
-let stars = [];
-let starsData = { score: 0, lives: 3 };
-const canvas = document.getElementById("stars-canvas");
-const ctx = canvas.getContext("2d");
-
-function resetStarsUI() {
-    document.getElementById("stars-menu").classList.remove("hidden");
-    document.getElementById("stars-play").classList.add("hidden");
-    document.getElementById("stars-gameover").classList.add("hidden");
-}
-
-function startStarsGame() {
-    starsData = { score: 0, lives: 3 };
-    stars = [];
-    document.getElementById("stars-menu").classList.add("hidden");
-    document.getElementById("stars-play").classList.remove("hidden");
-    document.getElementById("stars-gameover").classList.add("hidden");
-    document.getElementById("stars-input").value = "";
-    document.getElementById("stars-input").focus();
-    updateStarsUI();
-
-    // Adjust canvas size
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-
-    lastTime = performance.now();
-    spawnTimer = 0;
-    starsAnimFrame = requestAnimationFrame(gameLoop);
-}
-
-let lastTime = 0;
-let spawnTimer = 0;
-
-function gameLoop(timestamp) {
-    const dt = timestamp - lastTime;
-    lastTime = timestamp;
-
-    updateStars(dt);
-    drawStars();
-
-    if (starsData.lives > 0) {
-        starsAnimFrame = requestAnimationFrame(gameLoop);
-    } else {
-        endStarsGame();
+            
+            onster();
+            
+            
+        tion newMonster() {
+        const a = 2 + Math.floor(Math.random() * 8);
+        const b = 2 + Math.floor(Math.random() * 8);
+    monsterVal = a * b;
+        document.getElementById("monster-number").textContent = monsterVal;
+        document.getElementById("monster-feedback").textContent = translations[currentLang].monsterIntro;
+    document.getElementById("monster-feedback").style.color = "var(--text-color)";
+        document.getElementById("monster-array").innerHTML = "";
+        generateMonster();
+        SoundManager.playMonsterRoar();
+        
+        
+        tion attackMonster() {
+            t a = parseInt(document.getElementById("monster-a").value);
+                = parseInt(document.getElementById("monster-b").value);
+                = translations[currentLang];
+            t fb = document.getElementById("monster-feedback");
+        
+        if (a * b === monsterVal) {
+            fb.textContent = t.monsterSuccess;
+        fb.style.color = "var(--success-color)";
+            drawMonsterArray(a, b);
+            SoundManager.playWin();
+            triggerConfetti();
+            VoiceManager.speak(t.monsterSuccess);
+        GemManager.add(20);
+        } else {
+            fb.textContent = t.monsterFail;
+            fb.style.color = "var(--error-color)";
+            SoundManager.playWrong();
+            VoiceManager.speak(t.monsterFail);
     }
-}
-
-function updateStars(dt) {
-    spawnTimer += dt;
-    if (spawnTimer > 2000) { // Spawn every 2s
-        spawnStar();
-        spawnTimer = 0;
     }
-
-    for (let i = stars.length - 1; i >= 0; i--) {
-        stars[i].y += stars[i].speed * (dt / 16);
-        if (stars[i].y > canvas.height) {
-            stars.splice(i, 1);
-            starsData.lives--;
-            updateStarsUI();
+        
+        tion drawMonsterArray(a, b) {
+        const div = document.getElementById("monster-array");
+        div.innerHTML = "";
+    div.style.gridTemplateColumns = `repeat(${b}, 20px)`;
+        for (let i = 0; i < a * b; i++) {
+            const tile = document.createElement("div");
+            tile.className = "monster-tile";
+            div.appendChild(tile);
+            
+            
+            
+        -- Time Attack ---
+            AttackInterval;
+            Data = { timeLeft: 60, score: 0 };
+            
+             resetTimeUI() {
+        document.getElementById("time-menu").classList.remove("hidden");
+        document.getElementById("time-play").classList.add("hidden");
+}
+    
+        tion startTimeAttack() {
+        timeData = { timeLeft: 60, score: 0 };
+        document.getElementById("time-menu").classList.add("hidden");
+        document.getElementById("time-play").classList.remove("hidden");
+            teTimeDisplay();
+            TimeQuestion();
+            
+        timeAttackInterval = setInterval(() => {
+            timeData.timeLeft--;
+        updateTimeDisplay();
+            if (timeData.timeLeft <= 0) {
+                clearInterval(timeAttackInterval);
+                endTimeAttack();
         }
-    }
-}
-
-function spawnStar() {
-    const a = 2 + Math.floor(Math.random() * 8);
+        }, 1000);
+        
+        
+    function updateTimeDisplay() {
+    document.getElementById("time-left").textContent = timeData.timeLeft;
+        document.getElementById("time-score").textContent = timeData.score;
+        document.getElementById("timer-fill").style.width = (timeData.timeLeft / 60 * 100) + "%";
+        
+        
+        tion nextTimeQuestion() {
+        const a = 2 + Math.floor(Math.random() * 8);
     const b = 2 + Math.floor(Math.random() * 8);
-    stars.push({
-        a: a,
-        b: b,
-        ans: a * b,
-        x: Math.random() * (canvas.width - 60) + 30,
+        const ans = a * b;
+            
+            ment.getElementById("time-question").textContent = `${a} × ${b} = ?`;
+            
+                 = [ans];
+                pts.length < 4) {
+            let fake = ans + (Math.floor(Math.random() * 11) - 5);
+            if (fake > 0 && !opts.includes(fake)) opts.push(fake);
+        }
+    opts.sort(() => Math.random() - 0.5);
+    
+        const container = document.getElementById("time-options");
+        container.innerHTML = "";
+        opts.forEach(val => {
+            const btn = document.createElement("button");
+        btn.textContent = val;
+            btn.onclick = () => {
+                if (val === ans) {
+                    timeData.score += 10;
+                    SoundManager.playCorrect();
+                nextTimeQuestion();
+                } else {
+                timeData.score = Math.max(0, timeData.score - 5);
+                    SoundManager.playWrong();
+                    updateTimeDisplay();
+                }
+            };
+            container.appendChild(btn);
+        });
+}
+        
+        tion endTimeAttack() {
+        const t = translations[currentLang];
+            ment.getElementById("time-question").textContent = t.timeOver;
+            ment.getElementById("time-options").innerHTML = `<h3>${t.timeFinalScore} ${timeData.score}</h3>`;
+            
+                ckBtn = document.createElement("button");
+                    Content = t.backToMenu;
+                    ick = backToMenu;
+                    e.marginTop = "20px";
+                .getElementById("time-options").appendChild(backBtn);
+                    
+                        timeDta.score > 0) {
+                                const gems = Math.floor(timeData.score / 10);
+                        GemManager.add(gems);
+                        showFloatingFeedback(`+${gems} 💎`, window.innerWidth / 2, window.innerHeight / 2, "#00e5ff");
+                        
+                    } 
+
+                    tars ---
+                mFrame;
+            s = [];
+            sData = { score: 0, lives: 3 };
+        t canvas = document.getElementById("stars-canvas");
+    const ctx = canvas.getContext("2d");
+
+    function resetStarsUI() {
+        document.getElementById("stars-menu").classList.remove("hidden");
+        document.getElementById("stars-play").classList.add("hidden");
+        document.getElementById("stars-gameover").classList.add("hidden");
+}
+        
+        tion startStarsGame() {
+        starsData = { score: 0, lives: 3 };
+        stars = [];
+        document.getElementById("stars-menu").classList.add("hidden");
+        document.getElementById("stars-play").classList.remove("hidden");
+    document.getElementById("stars-gameover").classList.add("hidden");
+        document.getElementById("stars-input").value = "";
+        document.getElementById("stars-input").focus();
+        updateStarsUI();
+    
+        // Adjust canvas size
+        const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+        canvas.height = rect.height;
+        
+        lastTime = performance.now();
+        spawnTimer = 0;
+        starsAnimFrame = requestAnimationFrame(gameLoop);
+}
+    
+        lastTime = 0;
+        spawnTimer = 0;
+        
+        tion gameLoop(timestamp) {
+        const dt = timestamp - lastTime;
+        lastTime = timestamp;
+        
+        updateStars(dt);
+    drawStars();
+        
+        if (starsData.lives > 0) {
+            starsAnimFrame = requestAnimationFrame(gameLoop);
+        } else {
+        endStarsGame();
+        }
+        
+        
+    function updateStars(dt) {
+    spawnTimer += dt;
+        if (spawnTimer > 2000) { // Spawn every 2s
+            spawnStar();
+        spawnTimer = 0;
+        }
+        
+        for (let i = stars.length - 1; i >= 0; i--) {
+        stars[i].y += stars[i].speed * (dt / 16);
+            if (stars[i].y > canvas.height) {
+                stars.splice(i, 1);
+            starsData.lives--;
+                updateStarsUI();
+            }
+        }
+            
+        
+    function spawnStar() {
+    const a = 2 + Math.floor(Math.random() * 8);
+        const b = 2 + Math.floor(Math.random() * 8);
+        stars.push({
+            a: a,
+            b: b,
+            ans: a * b,
+            x: Math.random() * (canvas.width - 60) + 30,
         y: -30,
-        speed: 1 + Math.random() * 1.5
+            speed: (1 + Math.random() * 1.5) * 0.4 // Reduced to 40%
     });
 }
 
@@ -562,7 +622,8 @@ function submitStarInput() {
         starsData.score += 10;
         document.getElementById("stars-input").value = "";
         SoundManager.playCorrect();
-        showFloatingFeedback("+10", canvas.getBoundingClientRect().left + canvas.width / 2, canvas.getBoundingClientRect().top + 50, "#0f0");
+        showFloatingFeedback("+10", canvas.getBoundingClientRect().left + canvas.width/2, canvas.getBoundingClientRect().top + 50, "#0f0");
+        GemManager.add(1); // 1 gem per star
     } else {
         SoundManager.playWrong();
     }
@@ -585,3 +646,4 @@ function endStarsGame() {
 
 // Init
 updateTexts();
+GemManager.updateDisplay();

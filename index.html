@@ -15,6 +15,11 @@
         <p data-i18n="appSubtitle">用視覺和遊戲學會九九乘法！</p>
         <button id="lang-toggle" onclick="toggleLanguage()">English</button>
         <button id="sound-toggle" onclick="toggleSound()">🔊</button>
+        <div id="gem-counter"
+            style="display:inline-flex; align-items:center; gap:5px; background:rgba(0,0,0,0.3); padding:5px 10px; border-radius:20px; margin-left:10px;">
+            <span style="font-size:1.2rem;">💎</span>
+            <span id="gem-count" style="font-weight:bold; color:#00e5ff;">0</span>
+        </div>
     </header>
 
     <!-- Menu -->
@@ -83,6 +88,7 @@
         <p data-i18n="monsterDesc">怪獸身上的數字是由一個「乘法陣列」變出來的，請找出一組因數打敗他！</p>
 
         <div id="monster-card">
+            <div id="monster-image" style="width:150px; height:150px; margin:0 auto 10px auto;"></div>
             <div data-i18n="monsterPower">怪獸的力量值：</div>
             <div id="monster-number">?</div>
 
