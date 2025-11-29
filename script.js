@@ -34,26 +34,12 @@ const GemManager = {
 
 // --- Monster Generator ---
 function generateMonster() {
-    const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEEAD", "#D4A5A5"];
-    const bodyColor = colors[Math.floor(Math.random() * colors.length)];
-    const eyeCount = Math.floor(Math.random() * 3) + 1;
+    // Use DiceBear 'adventurer' style for a cute, RPG/Ghibli-esque look
+    // Fallback to 'fun-emoji' if network fails (handled by img onerror, but here we just set the src)
+    const seed = monsterVal + "-" + Date.now(); // Ensure variety
+    const url = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
 
-    let eyesSvg = "";
-    for (let i = 0; i < eyeCount; i++) {
-        const cx = 35 + (i * 30 / Math.max(1, eyeCount - 1));
-        eyesSvg += `<circle cx="${eyeCount === 1 ? 50 : cx}" cy="40" r="8" fill="white" />
-                    <circle cx="${eyeCount === 1 ? 50 : cx}" cy="40" r="3" fill="black" />`;
-    }
-
-    const svg = `
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20,80 Q10,50 20,20 Q50,0 80,20 Q90,50 80,80 Q50,100 20,80" fill="${bodyColor}" stroke="#333" stroke-width="3" />
-        ${eyesSvg}
-        <path d="M30,70 Q50,80 70,70" fill="none" stroke="#333" stroke-width="3" stroke-linecap="round" />
-        <path d="M35,70 L35,75 M45,70 L45,75 M55,70 L55,75 M65,70 L65,75" stroke="#333" stroke-width="2" />
-    </svg>`;
-
-    document.getElementById("monster-image").innerHTML = svg;
+    document.getElementById("monster-image").innerHTML = `<img src="${url}" alt="Monster" style="width:100%; height:100%; object-fit:contain;">`;
 }
 
 // --- Sound & Voice Manager ---
@@ -64,8 +50,18 @@ const SoundManager = {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         }
     },
+    resume: function () {
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    },
     playTone: function (freq, type, duration) {
-        if (!isSoundOn || !this.ctx) return;
+        if (!isSoundOn) return;
+        this.init();
+        this.resume();
+
+        if (!this.ctx) return;
+
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = type;
@@ -78,22 +74,20 @@ const SoundManager = {
         osc.stop(this.ctx.currentTime + duration);
     },
     playCorrect: function () {
-        this.init();
         this.playTone(600, 'sine', 0.1);
         setTimeout(() => this.playTone(800, 'sine', 0.2), 100);
     },
     playWrong: function () {
-        this.init();
         this.playTone(150, 'sawtooth', 0.3);
     },
     playWin: function () {
-        this.init();
         [400, 500, 600, 800].forEach((f, i) => setTimeout(() => this.playTone(f, 'square', 0.2), i * 100));
     },
     playMonsterRoar: function () {
-        this.init();
-        this.playTone(100, 'sawtooth', 0.5);
-        setTimeout(() => this.playTone(80, 'sawtooth', 0.5), 100);
+        // Deeper, longer roar
+        this.playTone(150, 'sawtooth', 0.4);
+        setTimeout(() => this.playTone(120, 'sawtooth', 0.4), 100);
+        setTimeout(() => this.playTone(100, 'sawtooth', 0.6), 200);
     }
 };
 
