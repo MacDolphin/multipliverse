@@ -2,13 +2,22 @@
 let currentLang = "zh-Hant";
 let currentGame = null;
 let isSoundOn = true;
-let totalGems = parseInt(localStorage.getItem("mv_gems") || "0");
+let totalGems = 0;
+try {
+    totalGems = parseInt(localStorage.getItem("mv_gems") || "0");
+} catch (e) {
+    console.warn("LocalStorage access denied", e);
+}
 
 // --- Gem Manager ---
 const GemManager = {
     add: function (amount) {
         totalGems += amount;
-        localStorage.setItem("mv_gems", totalGems);
+        try {
+            localStorage.setItem("mv_gems", totalGems);
+        } catch (e) {
+            console.warn("LocalStorage save failed", e);
+        }
         this.updateDisplay();
         this.animateAdd(amount);
     },
