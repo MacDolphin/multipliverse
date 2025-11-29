@@ -168,7 +168,13 @@ function updateArrayInfo() {
 
     const rows = new Set(arraySelected.map(i => Math.floor(i / 10)));
     const cols = new Set(arraySelected.map(i => i % 10));
-    document.getElementById("current-array").textContent = `${rows.size} × ${cols.size}`;
+
+    const t = translations[currentLang];
+    const parts = t.targetText.split('×');
+    const labelRow = parts[0].trim();
+    const labelCol = parts[1].trim();
+
+    document.getElementById("current-array").textContent = `${rows.size} ${labelRow} × ${cols.size} ${labelCol}`;
     document.getElementById("current-total").textContent = arraySelected.length;
 }
 
