@@ -171,10 +171,16 @@ function updateArrayInfo() {
 
     const t = translations[currentLang];
     const parts = t.targetText.split('×');
-    const labelRow = parts[0].trim();
-    const labelCol = parts[1].trim();
+    const label1 = parts[0].trim();
+    const label2 = parts[1].trim();
 
-    document.getElementById("current-array").textContent = `${rows.size} ${labelRow} × ${cols.size} ${labelCol}`;
+    if (currentLang === 'zh-Hant') {
+        // Chinese: Col x Row (行 x 列)
+        document.getElementById("current-array").textContent = `${cols.size} ${label1} × ${rows.size} ${label2}`;
+    } else {
+        // English: Row x Col
+        document.getElementById("current-array").textContent = `${rows.size} ${label1} × ${cols.size} ${label2}`;
+    }
     document.getElementById("current-total").textContent = arraySelected.length;
 }
 
@@ -182,8 +188,21 @@ function newArrayTask() {
     arrayTargetRows = 2 + Math.floor(Math.random() * 4);
     arrayTargetCols = 2 + Math.floor(Math.random() * 4);
     const t = translations[currentLang];
+    const parts = t.targetText.split('×');
+    const label1 = parts[0].trim();
+    const label2 = parts[1].trim();
+
+    let text = "";
+    if (currentLang === 'zh-Hant') {
+        // Chinese: Col x Row (行 x 列)
+        text = `${arrayTargetCols} ${label1} × ${arrayTargetRows} ${label2}`;
+    } else {
+        // English: Row x Col
+        text = `${arrayTargetRows} ${label1} × ${arrayTargetCols} ${label2}`;
+    }
+
     document.getElementById("target-rc-text").textContent =
-        `${arrayTargetRows} ${t.targetText.split('×')[0]} × ${arrayTargetCols} ${t.targetText.split('×')[1]} (${arrayTargetRows * arrayTargetCols})`;
+        `${text} (${arrayTargetRows * arrayTargetCols})`;
 
     arraySelected = [];
     document.querySelectorAll(".cell").forEach(c => c.classList.remove("filled"));
