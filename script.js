@@ -1,6 +1,85 @@
 // Global State
 let currentLang = "zh-Hant";
 let currentGame = null;
+let isSoundOn = true;
+
+// --- Sound & Voice Manager ---
+const SoundManager = {
+    ctx: null,
+    init: function () {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+    playTone: function (freq, type, duration) {
+        if (!isSoundOn || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    },
+    playCorrect: function () {
+        this.init();
+        this.playTone(600, 'sine', 0.1);
+        setTimeout(() => this.playTone(800, 'sine', 0.2), 100);
+    },
+    playWrong: function () {
+        this.init();
+        this.playTone(150, 'sawtooth', 0.3);
+    },
+    playWin: function () {
+        this.init();
+        [400, 500, 600, 800].forEach((f, i) => setTimeout(() => this.playTone(f, 'square', 0.2), i * 100));
+    }
+};
+
+const VoiceManager = {
+    speak: function (text) {
+        if (!isSoundOn) return;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = currentLang === 'zh-Hant' ? 'zh-TW' : 'en-US';
+        window.speechSynthesis.speak(u);
+    }
+};
+
+function toggleSound() {
+    isSoundOn = !isSoundOn;
+    const btn = document.getElementById("sound-toggle");
+    btn.textContent = isSoundOn ? "🔊" : "🔇";
+    // Initialize audio context on user gesture
+    if (isSoundOn) SoundManager.init();
+}
+
+// --- Visual Effects ---
+function showFloatingFeedback(text, x, y, color) {
+    const el = document.createElement("div");
+    el.className = "float-feedback";
+    el.textContent = text;
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    el.style.color = color;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+}
+
+function triggerConfetti() {
+    for (let i = 0; i < 50; i++) {
+        const c = document.createElement("div");
+        c.className = "confetti";
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        c.style.animationDuration = (Math.random() * 2 + 1) + "s";
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 3000);
+    }
+}
 
 // --- Localization ---
 function updateTexts() {
@@ -122,12 +201,19 @@ function checkArray() {
     if (rows === arrayTargetRows && cols === arrayTargetCols && total === rows * cols) {
         fb.textContent = t.arrayFeedbackSuccess;
         fb.style.color = "var(--success-color)";
+        SoundManager.playCorrect();
+        VoiceManager.speak(t.arrayFeedbackSuccess);
+        triggerConfetti();
     } else if (rows === arrayTargetRows && cols === arrayTargetCols) {
         fb.textContent = t.arrayFeedbackShape;
         fb.style.color = "var(--error-color)";
+        SoundManager.playWrong();
+        VoiceManager.speak(t.arrayFeedbackShape);
     } else {
         fb.textContent = t.arrayFeedbackWrong;
         fb.style.color = "var(--error-color)";
+        SoundManager.playWrong();
+        VoiceManager.speak(t.arrayFeedbackWrong);
     }
 }
 
@@ -167,6 +253,7 @@ function nextQuizQuestion() {
     const ans = a * b;
 
     document.getElementById("quiz-question").textContent = `${a} × ${b} = ?`;
+    VoiceManager.speak(`${a} times ${b}`.replace("times", currentLang === 'zh-Hant' ? '乘' : 'times'));
     document.getElementById("quiz-progress").textContent = t.quizProgress.replace("{current}", quizData.current).replace("{total}", quizData.total);
     document.getElementById("quiz-feedback").textContent = "";
 
@@ -194,9 +281,15 @@ function checkQuizAnswer(val, ans) {
         quizData.score++;
         fb.textContent = t.quizCorrect;
         fb.style.color = "var(--success-color)";
+        SoundManager.playCorrect();
+        document.getElementById("quiz-question").classList.add("anim-pop");
+        setTimeout(() => document.getElementById("quiz-question").classList.remove("anim-pop"), 300);
     } else {
         fb.textContent = t.quizWrong + ans;
         fb.style.color = "var(--error-color)";
+        SoundManager.playWrong();
+        document.getElementById("quiz-question").classList.add("anim-shake");
+        setTimeout(() => document.getElementById("quiz-question").classList.remove("anim-shake"), 400);
     }
     setTimeout(nextQuizQuestion, 1000);
 }
@@ -236,9 +329,14 @@ function attackMonster() {
         fb.textContent = t.monsterSuccess;
         fb.style.color = "var(--success-color)";
         drawMonsterArray(a, b);
+        SoundManager.playWin();
+        triggerConfetti();
+        VoiceManager.speak(t.monsterSuccess);
     } else {
         fb.textContent = t.monsterFail;
         fb.style.color = "var(--error-color)";
+        SoundManager.playWrong();
+        VoiceManager.speak(t.monsterFail);
     }
 }
 
@@ -307,9 +405,11 @@ function nextTimeQuestion() {
         btn.onclick = () => {
             if (val === ans) {
                 timeData.score += 10;
+                SoundManager.playCorrect();
                 nextTimeQuestion();
             } else {
                 timeData.score = Math.max(0, timeData.score - 5);
+                SoundManager.playWrong();
                 updateTimeDisplay();
             }
         };
@@ -436,7 +536,10 @@ function submitStarInput() {
         stars.splice(idx, 1);
         starsData.score += 10;
         document.getElementById("stars-input").value = "";
-        // Visual feedback could be added here
+        SoundManager.playCorrect();
+        showFloatingFeedback("+10", canvas.getBoundingClientRect().left + canvas.width / 2, canvas.getBoundingClientRect().top + 50, "#0f0");
+    } else {
+        SoundManager.playWrong();
     }
     updateStarsUI();
 }

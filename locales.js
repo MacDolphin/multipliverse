@@ -68,6 +68,8 @@ const translations = {
         "starsOver": "遊戲結束！",
         "gameOver": "遊戲結束",
         "playAgain": "🔁 再玩一次",
+        "soundOn": "🔊 音效開",
+        "soundOff": "🔇 音效關",
     },
     "en": {
         "appTitle": "MultipliVerse",
@@ -138,5 +140,7 @@ const translations = {
         "starsOver": "Game Over!",
         "gameOver": "GAME OVER",
         "playAgain": "🔁 Play Again",
+        "soundOn": "🔊 Sound On",
+        "soundOff": "🔇 Sound Off",
     }
 };
