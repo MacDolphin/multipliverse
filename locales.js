@@ -70,6 +70,18 @@ const translations = {
         "playAgain": "🔁 再玩一次",
         "soundOn": "🔊 音效開",
         "soundOff": "🔇 音效關",
+
+        // User System
+        "loginTitle": "登入 / 註冊",
+        "loginDesc": "建立帳號來儲存你的寶石和進度！",
+        "usernamePlaceholder": "輸入你的名字",
+        "passwordPlaceholder": "輸入密碼 (簡單即可)",
+        "loginBtn": "登入",
+        "signupBtn": "註冊新帳號",
+        "logoutBtn": "登出",
+        "welcomeUser": "嗨, {name}!",
+        "gemsSaved": "寶石已儲存！",
+        "avatarLabel": "選擇你的頭像：",
     },
     "en": {
         "appTitle": "MultipliVerse",
@@ -142,5 +154,18 @@ const translations = {
         "playAgain": "🔁 Play Again",
         "soundOn": "🔊 Sound On",
         "soundOff": "🔇 Sound Off",
+
+        // User System
+        "loginTitle": "Login / Sign Up",
+        "loginDesc": "Create an account to save your gems!",
+        "usernamePlaceholder": "Enter your name",
+        "passwordPlaceholder": "Enter password",
+        "loginBtn": "Login",
+        "signupBtn": "Sign Up",
+        "logoutBtn": "Logout",
+        "welcomeUser": "Hi, {name}!",
+        "gemsSaved": "Gems Saved!",
+        "avatarLabel": "Choose your avatar:",
     }
 };
+```

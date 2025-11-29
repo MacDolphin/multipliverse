@@ -2,22 +2,160 @@
 let currentLang = "zh-Hant";
 let currentGame = null;
 let isSoundOn = true;
-let totalGems = 0;
-try {
-    totalGems = parseInt(localStorage.getItem("mv_gems") || "0");
-} catch (e) {
-    console.warn("LocalStorage access denied", e);
-}
+let totalGems = 0; // Will be synced with UserManager
+
+// --- User Manager ---
+const UserManager = {
+    users: {},
+    currentUser: null,
+
+    init: function () {
+        try {
+            this.users = JSON.parse(localStorage.getItem("mv_users") || "{}");
+            const lastUser = localStorage.getItem("mv_last_user");
+            if (lastUser && this.users[lastUser]) {
+                this.login(lastUser, this.users[lastUser].password, true);
+            } else {
+                this.updateUI(); // Guest mode
+            }
+        } catch (e) {
+            console.warn("User init failed", e);
+        }
+        this.renderAvatars();
+    },
+
+    toggleModal: function () {
+        const modal = document.getElementById("login-modal");
+        modal.classList.toggle("hidden");
+        if (!modal.classList.contains("hidden")) {
+            // Reset fields
+            document.getElementById("username-input").value = "";
+            document.getElementById("password-input").value = "";
+            document.querySelectorAll(".avatar-option").forEach(el => el.classList.remove("selected"));
+
+            // If logged in, show logout
+            if (this.currentUser) {
+                document.getElementById("logout-btn").classList.remove("hidden");
+                document.getElementById("username-input").value = this.currentUser.username;
+                document.getElementById("username-input").disabled = true;
+            } else {
+                document.getElementById("logout-btn").classList.add("hidden");
+                document.getElementById("username-input").disabled = false;
+            }
+        }
+    },
+
+    renderAvatars: function () {
+        const grid = document.getElementById("avatar-grid");
+        grid.innerHTML = "";
+        const seeds = ["Felix", "Aneka", "Zoe", "Jack", "Bear", "Leo", "Max", "Lily"];
+        seeds.forEach(seed => {
+            const url = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+            const img = document.createElement("img");
+            img.src = url;
+            img.className = "avatar-option";
+            img.onclick = () => {
+                document.querySelectorAll(".avatar-option").forEach(el => el.classList.remove("selected"));
+                img.classList.add("selected");
+                img.dataset.seed = seed;
+            };
+            grid.appendChild(img);
+        });
+    },
+
+    signup: function () {
+        const username = document.getElementById("username-input").value.trim();
+        const password = document.getElementById("password-input").value.trim();
+        const selectedAvatar = document.querySelector(".avatar-option.selected");
+
+        if (!username || !password) {
+            alert("Please enter username and password!");
+            return;
+        }
+
+        if (this.users[username]) {
+            alert("User already exists!");
+            return;
+        }
+
+        const avatarSeed = selectedAvatar ? selectedAvatar.dataset.seed : "Felix";
+
+        this.users[username] = {
+            username,
+            password,
+            avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${avatarSeed}`,
+            gems: 0
+        };
+
+        this.saveUsers();
+        this.login(username, password);
+    },
+
+    login: function (usernameInput = null, passwordInput = null, auto = false) {
+        const username = usernameInput || document.getElementById("username-input").value.trim();
+        const password = passwordInput || document.getElementById("password-input").value.trim();
+
+        if (!this.users[username] || this.users[username].password !== password) {
+            if (!auto) alert("Invalid username or password!");
+            return;
+        }
+
+        this.currentUser = this.users[username];
+        localStorage.setItem("mv_last_user", username);
+
+        // Sync gems
+        totalGems = this.currentUser.gems;
+        GemManager.updateDisplay();
+
+        this.updateUI();
+        if (!auto) this.toggleModal();
+
+        const t = translations[currentLang];
+        showFloatingFeedback(t.welcomeUser.replace("{name}", username), window.innerWidth / 2, window.innerHeight / 2, "#0f0");
+    },
+
+    logout: function () {
+        this.currentUser = null;
+        localStorage.removeItem("mv_last_user");
+        totalGems = 0; // Reset to 0 or guest gems
+        GemManager.updateDisplay();
+        this.updateUI();
+        this.toggleModal();
+    },
+
+    saveUsers: function () {
+        localStorage.setItem("mv_users", JSON.stringify(this.users));
+    },
+
+    updateGem: function (amount) {
+        if (this.currentUser) {
+            this.currentUser.gems += amount;
+            this.saveUsers();
+        }
+    },
+
+    updateUI: function () {
+        const avatarDisplay = document.getElementById("user-avatar-display");
+        const nameDisplay = document.getElementById("user-name");
+        const t = translations[currentLang];
+
+        if (this.currentUser) {
+            avatarDisplay.innerHTML = `<img src="${this.currentUser.avatar}">`;
+            nameDisplay.textContent = this.currentUser.username;
+        } else {
+            avatarDisplay.innerHTML = "👤";
+            nameDisplay.textContent = t.loginBtn;
+        }
+    }
+};
 
 // --- Gem Manager ---
 const GemManager = {
     add: function (amount) {
         totalGems += amount;
-        try {
-            localStorage.setItem("mv_gems", totalGems);
-        } catch (e) {
-            console.warn("LocalStorage save failed", e);
-        }
+        UserManager.updateGem(amount); // Sync with user account
+        // Legacy local storage backup (optional, or remove)
+        // localStorage.setItem("mv_gems", totalGems); 
         this.updateDisplay();
         this.animateAdd(amount);
     },
@@ -34,10 +172,9 @@ const GemManager = {
 
 // --- Monster Generator ---
 function generateMonster() {
-    // Use DiceBear 'adventurer' style for a cute, RPG/Ghibli-esque look
-    // Fallback to 'fun-emoji' if network fails (handled by img onerror, but here we just set the src)
-    const seed = monsterVal + "-" + Date.now(); // Ensure variety
-    const url = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+    // Use RoboHash Set 2 (Monsters) for "Monsters Inc" style
+    const seed = monsterVal + "-" + Date.now();
+    const url = `https://robohash.org/${seed}?set=set2&size=150x150`;
 
     document.getElementById("monster-image").innerHTML = `<img src="${url}" alt="Monster" style="width:100%; height:100%; object-fit:contain;">`;
 }
@@ -95,7 +232,11 @@ const VoiceManager = {
     speak: function (text) {
         if (!isSoundOn) return;
         window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
+
+        // Remove emojis and leading symbols for cleaner speech
+        const cleanText = text.replace(/^[\p{Emoji}\p{Punct}]+/gu, '').trim();
+
+        const u = new SpeechSynthesisUtterance(cleanText);
         u.lang = currentLang === 'zh-Hant' ? 'zh-TW' : 'en-US';
         window.speechSynthesis.speak(u);
     }
@@ -649,4 +790,5 @@ function endStarsGame() {
 
 // Init
 updateTexts();
+UserManager.init(); // Initialize User System
 GemManager.updateDisplay();

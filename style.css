@@ -118,9 +118,69 @@ header {
   top: 0;
   z-index: 100;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-controls {
+  display: flex;
   align-items: center;
   gap: 10px;
+}
+
+#user-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 15px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background 0.3s;
+  border: 1px solid var(--accent-color);
+}
+
+#user-area:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#user-avatar-display {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  overflow: hidden;
+}
+
+#user-avatar-display img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 0.9rem;
+}
+
+#user-name {
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+#gem-counter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #00e5ff;
+  font-weight: bold;
 }
 
 h1 {
@@ -369,4 +429,101 @@ select {
   #quiz-question {
     font-size: 2.5rem;
   }
+
+  #quiz-question {
+    font-size: 2.5rem;
+  }
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: var(--surface-color);
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--accent-color);
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+.form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #555;
+  background: #333;
+  color: white;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.avatar-option {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s;
+  overflow: hidden;
+}
+
+.avatar-option:hover {
+  transform: scale(1.1);
+}
+
+.avatar-option.selected {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 10px var(--secondary-color);
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.secondary-btn {
+  background: transparent;
+  border: 1px solid var(--primary-color);
+}
+
+.danger-btn {
+  background: var(--error-color);
 }
