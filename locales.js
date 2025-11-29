@@ -81,7 +81,7 @@ const translations = {
         "logoutBtn": "登出",
         "welcomeUser": "嗨, {name}!",
         "gemsSaved": "寶石已儲存！",
-        "avatarLabel": "選擇你的頭像：",
+        "avatarLabel": "選擇你的頭像："
     },
     "en": {
         "appTitle": "MultipliVerse",
@@ -168,4 +168,4 @@ const translations = {
         "avatarLabel": "Choose your avatar:",
     }
 };
-```
+
