@@ -5,7 +5,8 @@ let isSoundOn = true;
 let totalGems = 0; // Will be synced with UserManager
 
 // --- User Manager ---
-const UserManager = {
+// --- User Manager ---
+var UserManager = {
     users: {},
     currentUser: null,
 
@@ -150,7 +151,8 @@ const UserManager = {
 };
 
 // --- Gem Manager ---
-const GemManager = {
+// --- Gem Manager ---
+var GemManager = {
     add: function (amount) {
         totalGems += amount;
         UserManager.updateGem(amount); // Sync with user account
@@ -180,7 +182,8 @@ function generateMonster() {
 }
 
 // --- Sound & Voice Manager ---
-const SoundManager = {
+// --- Sound & Voice Manager ---
+var SoundManager = {
     ctx: null,
     init: function () {
         if (!this.ctx) {
@@ -228,13 +231,13 @@ const SoundManager = {
     }
 };
 
-const VoiceManager = {
+var VoiceManager = {
     speak: function (text) {
         if (!isSoundOn) return;
         window.speechSynthesis.cancel();
 
-        // Remove emojis and leading symbols for cleaner speech
-        const cleanText = text.replace(/^[\p{Emoji}\p{Punct}]+/gu, '').trim();
+        // Remove emojis and leading symbols (simplified regex for compatibility)
+        const cleanText = text.replace(/[^\w\s\u4e00-\u9fa5]/g, '').trim();
 
         const u = new SpeechSynthesisUtterance(cleanText);
         u.lang = currentLang === 'zh-Hant' ? 'zh-TW' : 'en-US';
