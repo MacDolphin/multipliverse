@@ -757,7 +757,33 @@ function drawStars() {
 }
 
 function checkStarInput(e) {
+    // Keep physical keyboard support for numbers and enter
     if (e.key === "Enter") submitStarInput();
+    if (e.key >= "0" && e.key <= "9") {
+        appendStarInput(parseInt(e.key));
+    }
+    if (e.key === "Backspace") {
+        backspaceStarInput();
+    }
+}
+
+// Add global key listener for the game
+document.addEventListener('keydown', function (e) {
+    if (currentGame === 'stars' && !document.getElementById("stars-play").classList.contains("hidden")) {
+        checkStarInput(e);
+    }
+});
+
+function appendStarInput(num) {
+    const input = document.getElementById("stars-input");
+    if (input.value.length < 3) { // Limit length
+        input.value += num;
+    }
+}
+
+function backspaceStarInput() {
+    const input = document.getElementById("stars-input");
+    input.value = input.value.slice(0, -1);
 }
 
 function submitStarInput() {
@@ -773,6 +799,10 @@ function submitStarInput() {
         GemManager.add(1); // 1 gem per star
     } else {
         SoundManager.playWrong();
+        // Optional: clear input on wrong answer or keep it? 
+        // Keeping it allows correction.
+        document.getElementById("stars-input").classList.add("anim-shake");
+        setTimeout(() => document.getElementById("stars-input").classList.remove("anim-shake"), 400);
     }
     updateStarsUI();
 }

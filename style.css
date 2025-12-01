@@ -557,3 +557,29 @@ select {
 .danger-btn {
   background: var(--error-color);
 }
+/* Keypad */
+#stars-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-width: 300px;
+  margin: 20px auto 0 auto;
+}
+
+#stars-keypad button {
+  margin: 0;
+  padding: 15px;
+  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--accent-color);
+  border-radius: 10px;
+}
+
+#stars-keypad button:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#stars-keypad .keypad-action {
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}

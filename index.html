@@ -183,8 +183,24 @@
             </div>
 
             <div style="display:flex; justify-content:center; gap:10px;">
-                <input type="number" id="stars-input" placeholder="?" onkeydown="checkStarInput(event)">
+                <input type="number" id="stars-input" placeholder="?" readonly>
                 <button onclick="submitStarInput()" style="padding:10px 20px;">Go</button>
+            </div>
+            
+            <!-- On-screen Keypad -->
+            <div id="stars-keypad">
+                <button onclick="appendStarInput(1)">1</button>
+                <button onclick="appendStarInput(2)">2</button>
+                <button onclick="appendStarInput(3)">3</button>
+                <button onclick="appendStarInput(4)">4</button>
+                <button onclick="appendStarInput(5)">5</button>
+                <button onclick="appendStarInput(6)">6</button>
+                <button onclick="appendStarInput(7)">7</button>
+                <button onclick="appendStarInput(8)">8</button>
+                <button onclick="appendStarInput(9)">9</button>
+                <button onclick="backspaceStarInput()" class="keypad-action">⌫</button>
+                <button onclick="appendStarInput(0)">0</button>
+                <button onclick="submitStarInput()" class="keypad-action">Go</button>
             </div>
         </div>
     </div>
