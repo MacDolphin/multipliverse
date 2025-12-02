@@ -5,22 +5,38 @@ let isSoundOn = true;
 let totalGems = 0; // Will be synced with UserManager
 
 // --- User Manager ---
+// --- Firebase Init ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAgmUN2jtoe_n53_S6qELZ9RIp0P7CQ2X8",
+    authDomain: "multipliverse.firebaseapp.com",
+    projectId: "multipliverse",
+    storageBucket: "multipliverse.firebasestorage.app",
+    messagingSenderId: "918166425124",
+    appId: "1:918166425124:web:b15284cbf48a9ea21b92b1"
+};
+
+// Initialize Firebase
+try {
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore();
+    console.log("Firebase initialized");
+} catch (e) {
+    console.error("Firebase init error", e);
+    alert("Database connection failed. Please check your internet connection.");
+}
+
 // --- User Manager ---
 var UserManager = {
-    users: {},
     currentUser: null,
 
     init: function () {
-        try {
-            this.users = JSON.parse(localStorage.getItem("mv_users") || "{}");
-            const lastUser = localStorage.getItem("mv_last_user");
-            if (lastUser && this.users[lastUser]) {
-                this.login(lastUser, this.users[lastUser].password, true);
-            } else {
-                this.updateUI(); // Guest mode
-            }
-        } catch (e) {
-            console.warn("User init failed", e);
+        // Check if previously logged in
+        const lastUser = localStorage.getItem("mv_last_user");
+        if (lastUser) {
+            // Auto-login (fetch fresh data from cloud)
+            this.login(lastUser, null, true);
+        } else {
+            this.updateUI(); // Guest mode
         }
         this.renderAvatars();
     },
@@ -74,64 +90,90 @@ var UserManager = {
             return;
         }
 
-        if (this.users[username]) {
-            alert("User already exists!");
-            return;
-        }
-
         const avatarSeed = selectedAvatar ? selectedAvatar.dataset.seed : "Felix";
-
-        this.users[username] = {
-            username,
-            password,
+        const newUser = {
+            username: username,
+            password: password, // Storing plain text as requested for admin visibility
             avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${avatarSeed}`,
-            gems: 0
+            gems: 0,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        this.saveUsers();
-        this.login(username, password);
+        // Check if user exists
+        db.collection("users").doc(username).get().then((doc) => {
+            if (doc.exists) {
+                alert("User already exists! Please choose another name.");
+            } else {
+                // Create user
+                db.collection("users").doc(username).set(newUser).then(() => {
+                    alert("Account created successfully!");
+                    this.login(username, password);
+                }).catch((error) => {
+                    console.error("Error writing document: ", error);
+                    alert("Signup failed: " + error.message);
+                });
+            }
+        }).catch((error) => {
+            console.error("Error getting document: ", error);
+            alert("Network error: " + error.message);
+        });
     },
 
     login: function (usernameInput = null, passwordInput = null, auto = false) {
         const username = usernameInput || document.getElementById("username-input").value.trim();
         const password = passwordInput || document.getElementById("password-input").value.trim();
 
-        if (!this.users[username] || this.users[username].password !== password) {
-            if (!auto) alert("Invalid username or password!");
-            return;
-        }
+        if (!username) return;
 
-        this.currentUser = this.users[username];
-        localStorage.setItem("mv_last_user", username);
+        db.collection("users").doc(username).get().then((doc) => {
+            if (doc.exists) {
+                const userData = doc.data();
+                // Check password (if not auto-login)
+                if (!auto && userData.password !== password) {
+                    alert("Invalid username or password!");
+                    return;
+                }
 
-        // Sync gems
-        totalGems = this.currentUser.gems;
-        GemManager.updateDisplay();
+                // Login Success
+                this.currentUser = userData;
+                localStorage.setItem("mv_last_user", username);
 
-        this.updateUI();
-        if (!auto) this.toggleModal();
+                // Sync gems
+                totalGems = this.currentUser.gems || 0;
+                GemManager.updateDisplay();
 
-        const t = translations[currentLang];
-        showFloatingFeedback(t.welcomeUser.replace("{name}", username), window.innerWidth / 2, window.innerHeight / 2, "#0f0");
+                this.updateUI();
+                if (!auto) this.toggleModal();
+
+                const t = translations[currentLang];
+                showFloatingFeedback(t.welcomeUser.replace("{name}", username), window.innerWidth / 2, window.innerHeight / 2, "#0f0");
+            } else {
+                if (!auto) alert("User not found!");
+            }
+        }).catch((error) => {
+            console.error("Error getting document: ", error);
+            if (!auto) alert("Login failed: " + error.message);
+        });
     },
 
     logout: function () {
         this.currentUser = null;
         localStorage.removeItem("mv_last_user");
-        totalGems = 0; // Reset to 0 or guest gems
+        totalGems = 0; // Reset to 0
         GemManager.updateDisplay();
         this.updateUI();
         this.toggleModal();
     },
 
-    saveUsers: function () {
-        localStorage.setItem("mv_users", JSON.stringify(this.users));
-    },
-
     updateGem: function (amount) {
         if (this.currentUser) {
             this.currentUser.gems += amount;
-            this.saveUsers();
+            // Update cloud
+            db.collection("users").doc(this.currentUser.username).update({
+                gems: this.currentUser.gems
+            }).catch((error) => {
+                console.error("Error updating gems: ", error);
+            });
         }
     },
 
@@ -147,6 +189,18 @@ var UserManager = {
             avatarDisplay.innerHTML = "👤";
             nameDisplay.textContent = t.loginBtn;
         }
+    },
+
+    testConnection: function () {
+        alert("Testing connection...");
+        db.collection("test").add({
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            msg: "Hello from MultipliVerse"
+        }).then((docRef) => {
+            alert("✅ Connection Successful! Write ID: " + docRef.id + "\n(Data should appear in Firebase)");
+        }).catch((error) => {
+            alert("❌ Connection Failed!\nError: " + error.message + "\n\nPlease check your Firebase 'Rules' tab.");
+        });
     }
 };
 

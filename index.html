@@ -186,7 +186,7 @@
                 <input type="number" id="stars-input" placeholder="?" readonly>
                 <button onclick="submitStarInput()" style="padding:10px 20px;">Go</button>
             </div>
-            
+
             <!-- On-screen Keypad -->
             <div id="stars-keypad">
                 <button onclick="appendStarInput(1)">1</button>
@@ -233,11 +233,19 @@
                 <button onclick="UserManager.logout()" id="logout-btn" class="danger-btn hidden"
                     data-i18n="logoutBtn">登出</button>
             </div>
+            <div style="margin-top:10px; text-align:center;">
+                <button onclick="UserManager.testConnection()"
+                    style="background:#555; font-size:0.8rem; padding:5px 10px;">🛠️ Test DB Connection</button>
+            </div>
         </div>
     </div>
 
-    <script src="locales.js?v=2"></script>
-    <script src="script.js?v=2"></script>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <script src="locales.js?v=3"></script>
+    <script src="script.js?v=3"></script>
 </body>
 
 </html>
