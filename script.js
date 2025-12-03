@@ -260,13 +260,13 @@ function checkArray() {
         fb.style.color = "var(--error-color)";
         SoundManager.playWrong();
         VoiceManager.speak(t.arrayFeedbackShape);
-        GemManager.add(-2); // Deduct gems
+        GemManager.add(-5); // Deduct gems (half of 10)
     } else {
         fb.textContent = t.arrayFeedbackWrong;
         fb.style.color = "var(--error-color)";
         SoundManager.playWrong();
         VoiceManager.speak(t.arrayFeedbackWrong);
-        GemManager.add(-2); // Deduct gems
+        GemManager.add(-5); // Deduct gems (half of 10)
     }
 }
 
@@ -315,7 +315,7 @@ function attackMonster() {
         fb.style.color = "var(--error-color)";
         SoundManager.playWrong();
         VoiceManager.speak(t.monsterFail);
-        GemManager.add(-2); // Deduct gems
+        GemManager.add(-10); // Deduct gems (half of 20)
     }
 }
 
@@ -338,7 +338,7 @@ function submitStarInput() {
         // Keeping it allows correction.
         document.getElementById("stars-input").classList.add("anim-shake");
         setTimeout(() => document.getElementById("stars-input").classList.remove("anim-shake"), 400);
-        GemManager.add(-2); // Deduct gems
+        GemManager.add(-1); // Deduct gems (half of 1, minimum)
     }
     updateStarsUI();
 }
