@@ -209,6 +209,7 @@ var UserManager = {
 // --- Gem Manager ---
 var GemManager = {
     add: function (amount) {
+        console.log("GemManager.add called with:", amount);
         totalGems += amount;
         if (totalGems < 0) totalGems = 0; // Prevent negative gems
         UserManager.updateGem(amount); // Sync with user account
