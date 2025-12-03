@@ -206,9 +206,11 @@ var UserManager = {
 
 // --- Gem Manager ---
 // --- Gem Manager ---
+// --- Gem Manager ---
 var GemManager = {
     add: function (amount) {
         totalGems += amount;
+        if (totalGems < 0) totalGems = 0; // Prevent negative gems
         UserManager.updateGem(amount); // Sync with user account
         // Legacy local storage backup (optional, or remove)
         // localStorage.setItem("mv_gems", totalGems); 
@@ -222,9 +224,123 @@ var GemManager = {
         const el = document.getElementById("gem-counter");
         el.classList.add("anim-pop");
         setTimeout(() => el.classList.remove("anim-pop"), 300);
-        showFloatingFeedback(`+${amount} 💎`, el.getBoundingClientRect().left, el.getBoundingClientRect().top + 50, "#00e5ff");
+
+        const color = amount >= 0 ? "#00e5ff" : "#ff4444"; // Blue for add, Red for deduct
+        const text = amount >= 0 ? `+${amount} 💎` : `${amount} 💎`;
+
+        showFloatingFeedback(text, el.getBoundingClientRect().left, el.getBoundingClientRect().top + 50, color);
     }
 };
+
+// ... (existing code) ...
+
+function checkArray() {
+    const t = translations[currentLang];
+    const fb = document.getElementById("array-feedback");
+
+    if (arraySelected.length === 0) {
+        fb.textContent = t.arrayFeedbackEmpty;
+        return;
+    }
+
+    const rows = new Set(arraySelected.map(i => Math.floor(i / 10))).size;
+    const cols = new Set(arraySelected.map(i => i % 10)).size;
+    const total = arraySelected.length;
+
+    if (rows === arrayTargetRows && cols === arrayTargetCols && total === rows * cols) {
+        fb.textContent = t.arrayFeedbackSuccess;
+        fb.style.color = "var(--success-color)";
+        SoundManager.playCorrect();
+        VoiceManager.speak(t.arrayFeedbackSuccess);
+        triggerConfetti();
+        GemManager.add(10);
+    } else if (rows === arrayTargetRows && cols === arrayTargetCols) {
+        fb.textContent = t.arrayFeedbackShape;
+        fb.style.color = "var(--error-color)";
+        SoundManager.playWrong();
+        VoiceManager.speak(t.arrayFeedbackShape);
+        GemManager.add(-2); // Deduct gems
+    } else {
+        fb.textContent = t.arrayFeedbackWrong;
+        fb.style.color = "var(--error-color)";
+        SoundManager.playWrong();
+        VoiceManager.speak(t.arrayFeedbackWrong);
+        GemManager.add(-2); // Deduct gems
+    }
+}
+
+// ... (existing code) ...
+
+function checkQuizAnswer(val, ans) {
+    const t = translations[currentLang];
+    const fb = document.getElementById("quiz-feedback");
+    if (val === ans) {
+        quizData.score++;
+        fb.textContent = t.quizCorrect;
+        fb.style.color = "var(--success-color)";
+        SoundManager.playCorrect();
+        document.getElementById("quiz-question").classList.add("anim-pop");
+        setTimeout(() => document.getElementById("quiz-question").classList.remove("anim-pop"), 300);
+        GemManager.add(5);
+    } else {
+        fb.textContent = t.quizWrong + ans;
+        fb.style.color = "var(--error-color)";
+        SoundManager.playWrong();
+        document.getElementById("quiz-question").classList.add("anim-shake");
+        setTimeout(() => document.getElementById("quiz-question").classList.remove("anim-shake"), 400);
+        GemManager.add(-2); // Deduct gems
+    }
+    setTimeout(nextQuizQuestion, 1000);
+}
+
+// ... (existing code) ...
+
+function attackMonster() {
+    const a = parseInt(document.getElementById("monster-a").value);
+    const b = parseInt(document.getElementById("monster-b").value);
+    const t = translations[currentLang];
+    const fb = document.getElementById("monster-feedback");
+
+    if (a * b === monsterVal) {
+        fb.textContent = t.monsterSuccess;
+        fb.style.color = "var(--success-color)";
+        drawMonsterArray(a, b);
+        SoundManager.playWin();
+        triggerConfetti();
+        VoiceManager.speak(t.monsterSuccess);
+        GemManager.add(20);
+    } else {
+        fb.textContent = t.monsterFail;
+        fb.style.color = "var(--error-color)";
+        SoundManager.playWrong();
+        VoiceManager.speak(t.monsterFail);
+        GemManager.add(-2); // Deduct gems
+    }
+}
+
+// ... (existing code) ...
+
+function submitStarInput() {
+    const val = parseInt(document.getElementById("stars-input").value);
+    const idx = stars.findIndex(s => s.ans === val);
+
+    if (idx !== -1) {
+        stars.splice(idx, 1);
+        starsData.score += 10;
+        document.getElementById("stars-input").value = "";
+        SoundManager.playCorrect();
+        showFloatingFeedback("+10", canvas.getBoundingClientRect().left + canvas.width / 2, canvas.getBoundingClientRect().top + 50, "#0f0");
+        GemManager.add(1); // 1 gem per star
+    } else {
+        SoundManager.playWrong();
+        // Optional: clear input on wrong answer or keep it? 
+        // Keeping it allows correction.
+        document.getElementById("stars-input").classList.add("anim-shake");
+        setTimeout(() => document.getElementById("stars-input").classList.remove("anim-shake"), 400);
+        GemManager.add(-2); // Deduct gems
+    }
+    updateStarsUI();
+}
 
 // --- Monster Generator ---
 function generateMonster() {
