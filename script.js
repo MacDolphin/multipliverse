@@ -307,6 +307,29 @@ function attackMonster() {
         fb.textContent = t.monsterSuccess;
         fb.style.color = "var(--success-color)";
         drawMonsterArray(a, b);
+
+        // Show all factor pairs
+        const factorsDiv = document.getElementById("monster-factors");
+        factorsDiv.innerHTML = "<h4>所有答案組合：</h4>";
+        factorsDiv.classList.remove("hidden");
+
+        let pairs = [];
+        for (let i = 1; i <= 9; i++) {
+            if (monsterVal % i === 0) {
+                let j = monsterVal / i;
+                if (j >= 1 && j <= 9) {
+                    pairs.push(`${monsterVal} = ${i} × ${j}`);
+                }
+            }
+        }
+        // Remove duplicates if any (though loop 1-9 should be fine, but we might want unique pairs like 2x6 vs 6x2. 
+        // User asked for "A1 x B1; A2 x B2", implying all valid permutations or at least distinct pairs.
+        // Let's show all valid permutations in 1-9 range as it reinforces commutativity.
+
+        pairs.forEach(p => {
+            factorsDiv.innerHTML += `<div>${p}</div>`;
+        });
+
         SoundManager.playWin();
         triggerConfetti();
         VoiceManager.speak(t.monsterSuccess);
@@ -662,6 +685,8 @@ function newMonster() {
     document.getElementById("monster-feedback").textContent = translations[currentLang].monsterIntro;
     document.getElementById("monster-feedback").style.color = "var(--text-color)";
     document.getElementById("monster-array").innerHTML = "";
+    document.getElementById("monster-factors").innerHTML = "";
+    document.getElementById("monster-factors").classList.add("hidden");
     generateMonster();
     SoundManager.playMonsterRoar();
 }
