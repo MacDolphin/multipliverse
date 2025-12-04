@@ -561,18 +561,18 @@ select {
 #stars-keypad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  max-width: 300px;
-  margin: 20px auto 0 auto;
+  gap: 5px;
+  max-width: 250px;
+  margin: 10px auto 0 auto;
 }
 
 #stars-keypad button {
   margin: 0;
-  padding: 15px;
-  font-size: 1.5rem;
+  padding: 10px;
+  font-size: 1.2rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--accent-color);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 #stars-keypad button:active {
@@ -582,4 +582,28 @@ select {
 #stars-keypad .keypad-action {
   background: rgba(255, 255, 255, 0.2);
   font-weight: bold;
+}
+
+/* iPad Optimization for Meteor Shower */
+#game-stars {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#stars-play {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 10px;
+}
+
+#stars-canvas {
+  flex: 1;
+  width: 100%;
+  min-height: 0; /* Important for flex containers */
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  margin-bottom: 10px;
 }

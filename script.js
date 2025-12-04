@@ -838,7 +838,7 @@ function spawnStar() {
         ans: a * b,
         x: Math.random() * (canvas.width - 60) + 30,
         y: -30,
-        speed: (1 + Math.random() * 1.5) * 0.4 // Reduced to 40%
+        speed: (1 + Math.random() * 1.5) * 0.2 // Reduced to 20% for younger players
     });
 }
 
