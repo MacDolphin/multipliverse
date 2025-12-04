@@ -255,6 +255,7 @@ function checkArray() {
         VoiceManager.speak(t.arrayFeedbackSuccess);
         triggerConfetti();
         GemManager.add(10);
+        setTimeout(newArrayTask, 2000); // Auto-advance after 2 seconds
     } else if (rows === arrayTargetRows && cols === arrayTargetCols) {
         fb.textContent = t.arrayFeedbackShape;
         fb.style.color = "var(--error-color)";
