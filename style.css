@@ -557,32 +557,10 @@ select {
 .danger-btn {
   background: var(--error-color);
 }
-/* Keypad */
-#stars-keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-  max-width: 250px;
-  margin: 10px auto 0 auto;
-}
 
-#stars-keypad button {
-  margin: 0;
-  padding: 10px;
-  font-size: 1.2rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--accent-color);
-  border-radius: 8px;
-}
+/* Keypad styles moved to iPad Optimization section */
 
-#stars-keypad button:active {
-  background: rgba(255, 255, 255, 0.3);
-}
 
-#stars-keypad .keypad-action {
-  background: rgba(255, 255, 255, 0.2);
-  font-weight: bold;
-}
 
 /* iPad Optimization for Meteor Shower */
 #game-stars {
@@ -596,14 +574,86 @@ select {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding-bottom: 10px;
+  padding: 10px;
+  gap: 10px;
+}
+
+/* Default (Portrait) Layout: Game Top, Controls Bottom */
+#stars-game-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#stars-controls-area {
+  height: 45%;
+  /* Adjust as needed */
+  display: flex;
+  flex-direction: column;
 }
 
 #stars-canvas {
   flex: 1;
   width: 100%;
-  min-height: 0; /* Important for flex containers */
+  min-height: 0;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 10px;
   margin-bottom: 10px;
+}
+
+/* Keypad Styling */
+#stars-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  flex: 1;
+  /* Fill available space */
+  width: 100%;
+  max-width: 100%;
+  /* Allow full width */
+  margin: 0;
+}
+
+#stars-keypad button {
+  margin: 0;
+  padding: 0;
+  /* Remove padding to let flex/grid handle size */
+  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--accent-color);
+  border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  /* Fill grid cell */
+  touch-action: manipulation;
+  /* Disable double-tap zoom */
+}
+
+#stars-keypad button:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#stars-keypad .keypad-action {
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}
+
+/* Landscape Layout: Game Left, Controls Right */
+@media (orientation: landscape) {
+  #stars-play {
+    flex-direction: row;
+  }
+
+  #stars-game-area {
+    flex: 2;
+    /* 2/3 width */
+    margin-right: 15px;
+  }
+
+  #stars-controls-area {
+    flex: 1;
+    /* 1/3 width */
+    height: 100%;
+  }
 }

@@ -166,41 +166,47 @@
         </div>
 
         <div id="stars-play" class="hidden" style="position:relative;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <div><span data-i18n="starsScore">得分：</span> <span id="stars-score">0</span></div>
-                <div><span data-i18n="starsLives">生命：</span> <span id="stars-lives">❤❤❤</span></div>
+            <!-- Game Area (Top/Left) -->
+            <div id="stars-game-area">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <div><span data-i18n="starsScore">得分：</span> <span id="stars-score">0</span></div>
+                    <div><span data-i18n="starsLives">生命：</span> <span id="stars-lives">❤❤❤</span></div>
+                </div>
+
+                <canvas id="stars-canvas" width="600" height="400"></canvas>
+
+                <!-- Game Over Overlay -->
+                <div id="stars-gameover" class="hidden"
+                    style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; justify-content:center; align-items:center; border-radius:10px;">
+                    <h2 data-i18n="gameOver" style="font-size:3rem; color:var(--error-color);">GAME OVER</h2>
+                    <h3 id="stars-final-score" style="font-size:2rem; margin:10px 0;"></h3>
+                    <button onclick="startStarsGame()"><span data-i18n="playAgain">🔁 Play Again</span></button>
+                    <button onclick="backToMenu()"><span data-i18n="backToMenu">⬅ Menu</span></button>
+                </div>
             </div>
 
-            <canvas id="stars-canvas" width="600" height="400"></canvas>
+            <!-- Controls Area (Bottom/Right) -->
+            <div id="stars-controls-area">
+                <div style="display:flex; justify-content:center; gap:10px; margin-bottom: 10px;">
+                    <input type="number" id="stars-input" placeholder="?" readonly>
+                    <button onclick="submitStarInput()" style="padding:10px 20px;">Go</button>
+                </div>
 
-            <!-- Game Over Overlay -->
-            <div id="stars-gameover" class="hidden"
-                style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; justify-content:center; align-items:center; border-radius:10px;">
-                <h2 data-i18n="gameOver" style="font-size:3rem; color:var(--error-color);">GAME OVER</h2>
-                <h3 id="stars-final-score" style="font-size:2rem; margin:10px 0;"></h3>
-                <button onclick="startStarsGame()"><span data-i18n="playAgain">🔁 Play Again</span></button>
-                <button onclick="backToMenu()"><span data-i18n="backToMenu">⬅ Menu</span></button>
-            </div>
-
-            <div style="display:flex; justify-content:center; gap:10px;">
-                <input type="number" id="stars-input" placeholder="?" readonly>
-                <button onclick="submitStarInput()" style="padding:10px 20px;">Go</button>
-            </div>
-
-            <!-- On-screen Keypad -->
-            <div id="stars-keypad">
-                <button onclick="appendStarInput(1)">1</button>
-                <button onclick="appendStarInput(2)">2</button>
-                <button onclick="appendStarInput(3)">3</button>
-                <button onclick="appendStarInput(4)">4</button>
-                <button onclick="appendStarInput(5)">5</button>
-                <button onclick="appendStarInput(6)">6</button>
-                <button onclick="appendStarInput(7)">7</button>
-                <button onclick="appendStarInput(8)">8</button>
-                <button onclick="appendStarInput(9)">9</button>
-                <button onclick="backspaceStarInput()" class="keypad-action">⌫</button>
-                <button onclick="appendStarInput(0)">0</button>
-                <button onclick="submitStarInput()" class="keypad-action">Go</button>
+                <!-- On-screen Keypad -->
+                <div id="stars-keypad">
+                    <button onclick="appendStarInput(1)">1</button>
+                    <button onclick="appendStarInput(2)">2</button>
+                    <button onclick="appendStarInput(3)">3</button>
+                    <button onclick="appendStarInput(4)">4</button>
+                    <button onclick="appendStarInput(5)">5</button>
+                    <button onclick="appendStarInput(6)">6</button>
+                    <button onclick="appendStarInput(7)">7</button>
+                    <button onclick="appendStarInput(8)">8</button>
+                    <button onclick="appendStarInput(9)">9</button>
+                    <button onclick="backspaceStarInput()" class="keypad-action">⌫</button>
+                    <button onclick="appendStarInput(0)">0</button>
+                    <button onclick="submitStarInput()" class="keypad-action">Go</button>
+                </div>
             </div>
         </div>
     </div>
